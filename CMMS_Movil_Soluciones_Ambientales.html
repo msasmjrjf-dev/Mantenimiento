@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10243a">
+  <title>CMMS | Móvil Soluciones Ambientales</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #10243a;
+      --navy-2: #18334e;
+      --ink: #1c2b3a;
+      --muted: #708090;
+      --line: #e0e7ed;
+      --surface: #ffffff;
+      --canvas: #f3f6f8;
+      --green: #15966a;
+      --green-soft: #e5f5ee;
+      --amber: #c78316;
+      --amber-soft: #fff3dc;
+      --red: #cf4a48;
+      --red-soft: #fff0ef;
+      --blue: #3478b8;
+      --blue-soft: #eaf3fb;
+      --shadow: 0 10px 30px rgba(16, 36, 58, .07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); min-width: 320px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { background: var(--navy); color: #fff; padding: 15px 26px; }
+    .topbar-inner { max-width: 1440px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 230px; }
+    .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #1b3a58; color: #57d6a4; }
+    .brand-mark svg { width: 24px; height: 24px; }
+    .brand-name { font-weight: 750; letter-spacing: .01em; font-size: 15px; line-height: 1.2; }
+    .brand-sub { color: #a9bdce; font-size: 11px; margin-top: 3px; }
+    .top-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 9px; }
+    .role-wrap { display: flex; align-items: center; gap: 8px; padding: 4px 9px 4px 12px; border: 1px solid #36516b; border-radius: 9px; background: #17314b; }
+    .role-wrap label { font-size: 11px; color: #bed0df; white-space: nowrap; }
+    .role-wrap select { background: transparent; color: white; border: 0; outline: 0; padding: 5px 18px 5px 2px; max-width: 240px; font-size: 12px; font-weight: 650; }
+    .role-wrap option { color: var(--ink); }
+    .connection-chip { display: inline-flex; align-items: center; gap: 7px; color: #c5d5e1; font-size: 10px; white-space: nowrap; padding: 0 3px; }
+    .connection-chip.is-connected { color: #b8f5d9; }
+    .connection-chip.is-error { color: #ffc1be; }
+    .connection-dot { width: 7px; height: 7px; border-radius: 50%; background: #e3a83e; box-shadow: 0 0 0 3px rgba(227, 168, 62, .12); }
+    .connection-chip.is-connected .connection-dot { background: #50d29c; box-shadow: 0 0 0 3px rgba(80, 210, 156, .12); }
+    .connection-chip.is-error .connection-dot { background: #ff7771; box-shadow: 0 0 0 3px rgba(255, 119, 113, .12); }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid transparent; border-radius: 8px; padding: 9px 12px; color: white; background: var(--navy-2); font-size: 12px; font-weight: 650; transition: .16s ease; }
+    .button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .button svg { width: 15px; height: 15px; }
+    .button-outline { border-color: #45627c; background: transparent; color: #e8f0f6; }
+    .button-primary { background: var(--green); color: white; }
+    .button-danger { background: var(--red); }
+    .button-light { background: #fff; color: var(--ink); border-color: var(--line); }
+    .button-small { padding: 7px 10px; font-size: 11px; }
+    main { max-width: 1440px; margin: 0 auto; padding: 28px 26px 54px; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 21px; }
+    .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .13em; font-weight: 800; font-size: 10px; }
+    h1 { color: var(--navy); font-size: clamp(24px, 3vw, 32px); margin: 5px 0 4px; letter-spacing: -.035em; }
+    .page-heading p { color: var(--muted); margin: 0; font-size: 13px; }
+    .current-date { text-align: right; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .current-date strong { display: block; font-size: 14px; color: var(--ink); margin-bottom: 3px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 23px; }
+    .kpi { position: relative; overflow: hidden; background: var(--surface); border: 1px solid #e8edf1; border-radius: 12px; padding: 17px 18px 15px; box-shadow: 0 3px 12px rgba(22, 43, 63, .025); }
+    .kpi::after { content: ""; position: absolute; right: -20px; top: -28px; width: 86px; height: 86px; border-radius: 50%; background: var(--kpi-soft, #eef3f7); opacity: .75; }
+    .kpi-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .kpi-icon { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 9px; color: var(--kpi-color, var(--blue)); background: var(--kpi-soft, var(--blue-soft)); }
+    .kpi-icon svg { width: 17px; height: 17px; }
+    .kpi-value { position: relative; z-index: 1; font-size: 29px; font-weight: 780; letter-spacing: -.04em; margin-top: 10px; color: var(--navy); line-height: 1; }
+    .kpi-note { position: relative; z-index: 1; color: #83909c; font-size: 10px; margin-top: 8px; }
+    .toolbar { background: var(--surface); border: 1px solid #e7edf1; border-radius: 12px; padding: 13px; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 3px 12px rgba(22, 43, 63, .025); }
+    .search-box { position: relative; flex: 1 1 250px; min-width: 180px; }
+    .search-box svg { position: absolute; top: 50%; left: 12px; width: 16px; height: 16px; color: #8b9aa8; transform: translateY(-50%); pointer-events: none; }
+    .control { width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 8px; background-color: white; color: var(--ink); padding: 8px 10px; outline: none; font-size: 12px; }
+    .control:focus { border-color: #7dbca5; box-shadow: 0 0 0 3px rgba(21, 150, 106, .1); }
+    .search-box .control { padding-left: 36px; }
+    .filter { flex: 0 1 170px; min-width: 130px; }
+    .filter select { color: #536575; }
+    .list-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 20px 2px 12px; }
+    .list-heading h2 { font-size: 16px; color: var(--navy); margin: 0; letter-spacing: -.01em; }
+    .results-count { color: var(--muted); font-size: 11px; }
+    .task-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .task-card { min-width: 0; background: var(--surface); border: 1px solid #e5ebf0; border-radius: 12px; box-shadow: 0 4px 14px rgba(16, 36, 58, .035); overflow: hidden; }
+    .task-card-top { padding: 17px 18px 13px; }
+    .task-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .task-id { color: #8492a0; font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+    .badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 8px; font-size: 9px; line-height: 1; font-weight: 750; white-space: nowrap; }
+    .badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .priority-low { color: #657789; background: #edf1f4; }
+    .priority-medium { color: #3875aa; background: var(--blue-soft); }
+    .priority-high { color: #b2710d; background: var(--amber-soft); }
+    .priority-critical { color: #bf4140; background: var(--red-soft); }
+    .status-pending { color: #9c6b13; background: #fff5de; }
+    .status-progress { color: #3375a9; background: #eaf3fb; }
+    .status-awaiting { color: #a86b0b; background: #fff1d3; }
+    .status-completed { color: #13845e; background: #e5f5ee; }
+    .task-title { color: var(--navy); font-size: 16px; line-height: 1.32; letter-spacing: -.02em; margin: 12px 0 5px; }
+    .task-area { color: #778695; font-size: 11px; font-weight: 600; }
+    .task-description { color: #657585; font-size: 11px; line-height: 1.5; margin: 10px 0 0; }
+    .task-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 18px 13px; }
+    .stat-label { display: block; color: #8794a0; font-size: 9px; text-transform: uppercase; font-weight: 750; letter-spacing: .07em; margin-bottom: 5px; }
+    .stat-value { display: flex; align-items: center; gap: 6px; color: #394b5d; font-size: 11px; font-weight: 650; min-width: 0; }
+    .stat-value svg { flex: none; width: 13px; height: 13px; color: #8292a0; }
+    .stat-value span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .progress-wrap { padding: 0 18px 14px; }
+    .progress-label { display: flex; align-items: center; justify-content: space-between; color: #738291; font-size: 10px; margin-bottom: 6px; }
+    .progress-label strong { color: var(--navy); font-size: 10px; }
+    .progress-track { height: 6px; background: #edf1f4; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #21aa79, #56c491); transition: width .25s ease; }
+    .progress-fill.is-done { background: #20a878; }
+    .task-details { border-top: 1px solid #eef1f4; }
+    .task-details summary { display: flex; list-style: none; cursor: pointer; align-items: center; justify-content: space-between; padding: 12px 18px; color: #516373; font-size: 11px; font-weight: 700; }
+    .task-details summary::-webkit-details-marker { display: none; }
+    .summary-left { display: inline-flex; align-items: center; gap: 7px; }
+    .summary-left svg { width: 14px; height: 14px; color: #8493a0; }
+    .chevron { color: #8996a2; transition: transform .18s ease; }
+    details[open] .chevron { transform: rotate(180deg); }
+    .detail-body { padding: 0 18px 15px; }
+    .subtasks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    .subtask { display: flex; align-items: flex-start; gap: 9px; color: #4c5d6d; font-size: 11px; line-height: 1.4; }
+    .subtask input { accent-color: var(--green); margin: 1px 0 0; width: 14px; height: 14px; flex: none; }
+    .subtask label { cursor: pointer; }
+    .subtask.is-checked label { color: #92a0aa; text-decoration: line-through; }
+    .empty-subtasks { color: #8d9aa5; font-size: 10px; margin: 0 0 9px; }
+    .add-subtask { display: flex; gap: 7px; margin-top: 12px; }
+    .add-subtask input { min-width: 0; min-height: 34px; font-size: 11px; }
+    .add-subtask button { flex: none; width: 35px; height: 35px; border: 0; border-radius: 8px; display: grid; place-items: center; color: #fff; background: var(--navy-2); }
+    .add-subtask button:hover { background: var(--green); }
+    .add-subtask button svg { width: 16px; height: 16px; }
+    .comment-box { border-top: 1px dashed #e3e9ee; margin-top: 13px; padding-top: 12px; }
+    .comment-box label { display: block; color: #516373; font-size: 10px; font-weight: 750; margin-bottom: 6px; }
+    .comment-box textarea { min-height: 58px; resize: vertical; font-size: 11px; }
+    .comment-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+    .saved-comment { border-left: 2px solid #8bd3b2; padding: 3px 0 3px 9px; color: #607181; font-size: 10px; line-height: 1.5; margin-top: 8px; white-space: pre-wrap; }
+    .execution-panel, .materials-panel { border-top: 1px dashed #e3e9ee; margin-top: 13px; padding-top: 12px; }
+    .execution-title, .materials-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #516373; font-size: 10px; font-weight: 800; margin-bottom: 8px; }
+    .execution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .execution-grid label, .material-form label { display: block; min-width: 0; color: #788795; font-size: 9px; font-weight: 750; }
+    .execution-grid input { min-height: 34px; margin-top: 4px; font-size: 10px; padding: 6px 7px; }
+    .duration-value { margin: 8px 0 0; color: #16845e; font-size: 10px; font-weight: 750; }
+    .runtime-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 18px 12px; color: #738291; font-size: 10px; }
+    .runtime-summary strong { color: #16845e; font-size: 10px; }
+    .materials-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; list-style: none; color: #516373; font-size: 10px; font-weight: 800; }
+    .materials-summary::-webkit-details-marker { display: none; }
+    .materials-count { color: #778695; font-size: 9px; font-weight: 700; }
+    .materials-list { list-style: none; display: grid; gap: 7px; margin: 10px 0 0; padding: 0; }
+    .material-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #4c5d6d; font-size: 10px; }
+    .material-info { min-width: 0; overflow-wrap: anywhere; }
+    .material-info strong { color: #34495a; }
+    .material-delete { flex: none; border: 0; border-radius: 5px; padding: 4px 6px; background: var(--red-soft); color: #b74442; font-size: 9px; font-weight: 750; }
+    .material-form { display: grid; grid-template-columns: minmax(110px, 1fr) 64px 96px auto; align-items: end; gap: 6px; margin-top: 10px; }
+    .material-form .control { min-height: 33px; padding: 6px 7px; font-size: 10px; }
+    .material-form button { min-height: 33px; padding: 6px 9px; font-size: 10px; }
+    .task-footer { border-top: 1px solid #eef1f4; padding: 11px 18px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fcfdfd; }
+    .status-control { max-width: 170px; min-height: 32px; padding: 5px 8px; font-size: 10px; font-weight: 700; }
+    .footer-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .text-button { border: 0; padding: 6px 7px; color: #567083; background: transparent; font-size: 10px; font-weight: 700; border-radius: 6px; }
+    .text-button:hover { background: #edf3f6; color: var(--navy); }
+    .text-button.danger { color: #bd4b49; }
+    .approve-button { background: var(--green-soft); color: #13845e; }
+    .locked-note { color: #15835e; font-size: 10px; font-weight: 700; }
+    .empty-state { grid-column: 1 / -1; text-align: center; padding: 54px 20px; background: #fff; border: 1px dashed #d8e1e8; border-radius: 12px; color: var(--muted); }
+    .empty-state svg { width: 35px; height: 35px; color: #9aabb8; }
+    .empty-state h3 { color: var(--navy); margin: 10px 0 5px; font-size: 15px; }
+    .empty-state p { margin: 0; font-size: 12px; }
+    .role-note { display: flex; align-items: center; gap: 8px; color: #627587; font-size: 11px; margin: 0 2px 12px; }
+    .role-note svg { width: 14px; height: 14px; color: var(--green); flex: none; }
+    .modal-backdrop { position: fixed; z-index: 20; inset: 0; display: none; place-items: center; padding: 18px; background: rgba(8, 22, 36, .57); backdrop-filter: blur(3px); }
+    .modal-backdrop.is-open { display: grid; }
+    .modal { width: min(560px, 100%); max-height: min(90vh, 850px); overflow: auto; background: #fff; border-radius: 14px; box-shadow: 0 25px 80px rgba(0, 0, 0, .23); }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 22px 15px; border-bottom: 1px solid #edf1f4; }
+    .modal-header h2 { color: var(--navy); font-size: 18px; margin: 0 0 4px; }
+    .modal-header p { color: var(--muted); margin: 0; font-size: 11px; }
+    .close-modal { border: 0; border-radius: 7px; width: 30px; height: 30px; color: #647586; background: #f0f3f5; font-size: 19px; line-height: 1; }
+    .modal-form { padding: 18px 22px 21px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { display: block; color: #435667; font-size: 10px; font-weight: 750; margin-bottom: 6px; }
+    .field textarea { min-height: 72px; resize: vertical; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 19px; padding-top: 15px; border-top: 1px solid #edf1f4; }
+    .toast { position: fixed; z-index: 30; bottom: 22px; left: 50%; transform: translate(-50%, 15px); opacity: 0; pointer-events: none; padding: 11px 16px; color: #fff; background: var(--navy); border-radius: 9px; box-shadow: var(--shadow); font-size: 12px; font-weight: 650; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-width: 980px) {
+      .topbar { padding: 13px 18px; }
+      .topbar-inner { align-items: flex-start; }
+      .top-actions { max-width: 68%; }
+      main { padding: 24px 18px 42px; }
+      .task-list { gap: 11px; }
+      .filter { flex-basis: 145px; }
+    }
+    @media (max-width: 720px) {
+      .topbar-inner { display: block; }
+      .brand { margin-bottom: 13px; }
+      .top-actions { max-width: none; justify-content: flex-start; }
+      .role-wrap { flex: 1 1 100%; }
+      .role-wrap select { max-width: none; flex: 1; }
+      .connection-chip { flex: 1 1 100%; padding: 3px 2px; }
+      .button { flex: 1 1 auto; }
+      .page-heading { align-items: flex-start; }
+      .current-date { display: none; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .kpi { padding: 13px 14px; }
+      .kpi-value { font-size: 25px; }
+      .toolbar { flex-wrap: wrap; gap: 8px; }
+      .search-box { flex-basis: 100%; }
+      .filter { flex: 1 1 calc(50% - 5px); min-width: 0; }
+      .task-list { grid-template-columns: 1fr; }
+      .task-card-top { padding: 15px 15px 12px; }
+      .task-stats, .progress-wrap { padding-left: 15px; padding-right: 15px; }
+      .runtime-summary { padding-left: 15px; padding-right: 15px; }
+      .task-details summary { padding-left: 15px; padding-right: 15px; }
+      .detail-body { padding-left: 15px; padding-right: 15px; }
+      .task-footer { padding-left: 15px; padding-right: 15px; }
+      .task-title { font-size: 15px; }
+      .material-form { grid-template-columns: minmax(0, 1fr) 64px 92px; }
+      .material-form button { grid-column: 1 / -1; }
+    }
+    @media (max-width: 390px) {
+      main { padding: 20px 12px 35px; }
+      .topbar { padding-left: 12px; padding-right: 12px; }
+      .top-actions .button { font-size: 10px; padding: 8px 7px; }
+      .role-wrap label { font-size: 10px; }
+      .task-footer { align-items: flex-start; flex-direction: column; }
+      .status-control { max-width: none; width: 100%; }
+      .footer-actions { width: 100%; justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="Móvil Soluciones Ambientales, gestión de mantenimiento">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 14.5 8l5.3.8-3.8 3.7.9 5.3-4.9-2.5-4.8 2.5.9-5.3-3.9-3.7L9.5 8 12 3.2Z"/><path d="M12 9.5v4.7M9.7 11.8h4.6"/></svg>
+        </div>
+        <div><div class="brand-name">Móvil Soluciones Ambientales</div><div class="brand-sub">Gestión de mantenimiento · CMMS</div></div>
+      </div>
+      <div class="top-actions">
+        <div class="role-wrap">
+          <label for="roleSelect">Vista activa</label>
+          <select id="roleSelect" aria-label="Cambiar rol de usuario">
+            <option value="supervisor">Supervisor · Control total</option>
+            <option value="tech-1">Técnico 1 · Mecánico</option>
+            <option value="tech-2">Técnico 2 · Eléctrico</option>
+            <option value="tech-3">Técnico 3 · Soldador</option>
+          </select>
+        </div>
+        <div class="connection-chip" id="connectionStatus" role="status" aria-live="polite"><span class="connection-dot"></span><span id="connectionLabel">Conectando a Firestore…</span></div>
+        <div id="backupActions" style="display:contents">
+        <button class="button button-outline" id="exportButton" type="button" title="Descargar una copia de seguridad JSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>Exportar datos
+        </button>
+        <button class="button button-outline" id="importButton" type="button" title="Cargar una copia de seguridad JSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Importar datos
+        </button>
+        <input class="sr-only" id="importFile" type="file" accept=".json,application/json" aria-label="Seleccionar respaldo JSON">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-heading" aria-labelledby="pageTitle">
+      <div>
+        <div class="eyebrow">Operaciones de planta</div>
+        <h1 id="pageTitle">Órdenes de mantenimiento</h1>
+        <p id="pageSubtitle">Control y seguimiento de tareas electromecánicas.</p>
+      </div>
+      <div class="current-date"><strong id="todayLabel"></strong>Turno de mantenimiento</div>
+    </section>
+
+    <section class="kpi-grid" aria-label="Resumen de tareas">
+      <article class="kpi" style="--kpi-color:#3478b8;--kpi-soft:#eaf3fb"><div class="kpi-head">Total de tareas<span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 5h11M8 12h11M8 19h11"/><path d="M4 5h.01M4 12h.01M4 19h.01"/></svg></span></div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-note" id="kpiTotalNote">Órdenes registradas</div></article>
+      <article class="kpi" style="--kpi-color:#b57916;--kpi-soft:#fff3dc"><div class="kpi-head">Pendientes<span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><div class="kpi-value" id="kpiPending">0</div><div class="kpi-note">Esperando inicio de trabajo</div></article>
+      <article class="kpi" style="--kpi-color:#3478b8;--kpi-soft:#eaf3fb"><div class="kpi-head">En progreso<span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h4l3-6 3 3 2-5h4"/><path d="M4 5v14h16"/></svg></span></div><div class="kpi-value" id="kpiProgress">0</div><div class="kpi-note">Intervenciones activas</div></article>
+      <article class="kpi" style="--kpi-color:#15966a;--kpi-soft:#e5f5ee"><div class="kpi-head">Concluidas<span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span></div><div class="kpi-value" id="kpiCompleted">0</div><div class="kpi-note" id="kpiCompletedNote">0 por aprobar · 0 cerradas</div></article>
+    </section>
+
+    <div class="role-note" id="roleNote" aria-live="polite"></div>
+
+    <section class="toolbar" aria-label="Filtros de órdenes">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+        <input class="control" id="searchInput" type="search" placeholder="Buscar por tarea, equipo o área..." aria-label="Buscar tareas">
+      </div>
+      <div class="filter"><label class="sr-only" for="statusFilter">Filtrar por estado</label><select class="control" id="statusFilter"><option value="all">Todos los estados</option><option value="pending">Pendiente</option><option value="in_progress">En progreso</option><option value="awaiting_approval">Por aprobar</option><option value="completed">Cerrada</option></select></div>
+      <div class="filter"><label class="sr-only" for="priorityFilter">Filtrar por prioridad</label><select class="control" id="priorityFilter"><option value="all">Todas las prioridades</option><option value="Baja">Prioridad baja</option><option value="Media">Prioridad media</option><option value="Alta">Prioridad alta</option><option value="Crítica">Prioridad crítica</option></select></div>
+      <div class="filter" id="technicianFilterWrap"><label class="sr-only" for="technicianFilter">Filtrar por técnico</label><select class="control" id="technicianFilter"><option value="all">Todos los técnicos</option></select></div>
+    </section>
+
+    <section aria-labelledby="tasksHeading">
+      <div class="list-heading">
+        <h2 id="tasksHeading">Órdenes de trabajo</h2>
+        <span class="results-count" id="resultsCount" aria-live="polite"></span>
+        <button class="button button-primary" id="newTaskButton" type="button" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nueva tarea
+        </button>
+      </div>
+      <div class="task-list" id="taskList" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="taskModalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header class="modal-header">
+        <div><h2 id="modalTitle">Nueva orden de trabajo</h2><p id="modalSubtitle">Completa los datos de la intervención.</p></div>
+        <button class="close-modal" id="closeModalButton" type="button" aria-label="Cerrar">×</button>
+      </header>
+      <form class="modal-form" id="taskForm">
+        <input type="hidden" id="taskIdField">
+        <div class="form-grid">
+          <div class="field"><label for="areaField">Equipo / Área *</label><input class="control" id="areaField" required maxlength="80" placeholder="Ej. Caldera 1"></div>
+          <div class="field"><label for="priorityField">Prioridad *</label><select class="control" id="priorityField" required><option>Baja</option><option selected>Media</option><option>Alta</option><option>Crítica</option></select></div>
+          <div class="field full"><label for="titleField">Título de la tarea *</label><input class="control" id="titleField" required maxlength="120" placeholder="Describe brevemente el trabajo"></div>
+          <div class="field"><label for="assigneeField">Técnico asignado *</label><select class="control" id="assigneeField" required></select></div>
+          <div class="field"><label for="dueDateField">Fecha límite *</label><input class="control" id="dueDateField" type="date" required></div>
+          <div class="field full"><label for="descriptionField">Descripción / instrucciones</label><textarea class="control" id="descriptionField" maxlength="600" placeholder="Detalles, síntomas o condiciones de seguridad..."></textarea></div>
+          <div class="field full" id="editStatusWrap" style="display:none"><label for="editStatusField">Estado de la orden</label><select class="control" id="editStatusField"><option value="pending">Pendiente</option><option value="in_progress">En progreso</option><option value="awaiting_approval">Concluida · Por aprobar</option><option value="completed">Cerrada por supervisor</option></select></div>
+        </div>
+        <div class="modal-actions">
+          <button class="button button-light" id="cancelModalButton" type="button">Cancelar</button>
+          <button class="button button-primary" type="submit" id="saveTaskButton">Crear tarea</button>
+        </div>
+      </form>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js';
+    import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, writeBatch, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js';
+
+    'use strict';
+
+    // Configuración del proyecto Firebase. Sustituye estos valores aquí si conectas otro proyecto.
+    // Las credenciales públicas de Firebase identifican el proyecto; protege los datos con Firebase Auth y reglas Firestore.
+    const firebaseConfig = {
+      apiKey: 'AIzaSyCgCJodvS9PprEQt7ppgM0D4pvMDOVOZc0',
+      authDomain: 'mantenimiento-msa.firebaseapp.com',
+      projectId: 'mantenimiento-msa',
+      storageBucket: 'mantenimiento-msa.firebasestorage.app',
+      messagingSenderId: '643644438930',
+      appId: '1:643644438930:web:832172640478536883294b',
+      measurementId: 'G-LTT1B8SXLY'
+    };
+
+    // Catálogo de técnicos simulado para este prototipo de acceso por roles.
+    const TECHNICIANS = [
+      { id: 'tech-1', name: 'Técnico 1 · Mecánico' },
+      { id: 'tech-2', name: 'Técnico 2 · Eléctrico' },
+      { id: 'tech-3', name: 'Técnico 3 · Soldador' }
+    ];
+    const ROLE_LABELS = { supervisor: 'Supervisor', 'tech-1': TECHNICIANS[0].name, 'tech-2': TECHNICIANS[1].name, 'tech-3': TECHNICIANS[2].name };
+    const PRIORITIES = ['Baja', 'Media', 'Alta', 'Crítica'];
+    const STATUS_LABELS = { pending: 'Pendiente', in_progress: 'En progreso', awaiting_approval: 'Por aprobar', completed: 'Cerrada' };
+    const STATUS_TO_FIRESTORE = { pending: 'Pendiente', in_progress: 'En Progreso', awaiting_approval: 'Por Validar', completed: 'Cerrada' };
+    const STATUS_FROM_FIRESTORE = { 'Pendiente': 'pending', 'En Progreso': 'in_progress', 'Por Validar': 'awaiting_approval', 'Cerrada': 'completed' };
+
+    const byId = (id) => document.getElementById(id);
+    const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const todayISO = () => {
+      const date = new Date();
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    };
+    const dateOffset = (days) => {
+      const date = new Date();
+      date.setDate(date.getDate() + days);
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    };
+    function normalizeDateTime(value) {
+      if (!value) return null;
+      if (typeof value.toDate === 'function') return value.toDate().toISOString();
+      if (value instanceof Date) return value.toISOString();
+      return Number.isNaN(Date.parse(value)) ? null : new Date(value).toISOString();
+    }
+    const makeSeedTasks = () => [
+      { id: 'OT-001', area: 'Incinerador · Línea 1', title: 'Inspección de rodamientos del ventilador de tiro', priority: 'Alta', assigneeId: 'tech-1', dueDate: dateOffset(1), status: 'in_progress', description: 'Verificar vibración y temperatura en ambos apoyos. Aplicar bloqueo y etiquetado antes de intervenir.', subtasks: [{ id: 's1', text: 'Aplicar bloqueo y etiquetado del equipo', done: true }, { id: 's2', text: 'Medir temperatura en rodamientos lado acople y libre', done: true }, { id: 's3', text: 'Verificar juego axial y radial', done: false }, { id: 's4', text: 'Registrar lecturas de vibración', done: false }], closureComment: '', createdAt: new Date().toISOString() },
+      { id: 'OT-002', area: 'Caldera · Sala de vapor', title: 'Revisión de bomba de alimentación de agua', priority: 'Crítica', assigneeId: 'tech-1', dueDate: dateOffset(0), status: 'pending', description: 'Revisar sello mecánico, acoplamiento y presión de descarga. Coordinar ventana con operaciones.', subtasks: [{ id: 's1', text: 'Confirmar disponibilidad de bomba de reserva', done: false }, { id: 's2', text: 'Inspeccionar sello mecánico por fugas', done: false }, { id: 's3', text: 'Verificar alineación de acoplamiento', done: false }], closureComment: '', createdAt: new Date().toISOString() },
+      { id: 'OT-003', area: 'Planta eléctrica · Generador 2', title: 'Corregir alarma intermitente de baja tensión', priority: 'Alta', assigneeId: 'tech-2', dueDate: dateOffset(2), status: 'in_progress', description: 'Inspeccionar circuito de sensado del AVR y terminales del tablero de control.', subtasks: [{ id: 's1', text: 'Revisar conexiones del transformador de potencial', done: true }, { id: 's2', text: 'Verificar ajuste y cableado del AVR', done: false }, { id: 's3', text: 'Realizar prueba con carga', done: false }], closureComment: '', createdAt: new Date().toISOString() },
+      { id: 'OT-004', area: 'Banda transportadora · Clasificación', title: 'Reparar soporte fisurado de guarda lateral', priority: 'Media', assigneeId: 'tech-3', dueDate: dateOffset(4), status: 'pending', description: 'Preparar zona y reparar soporte con soldadura adecuada para acero al carbono.', subtasks: [{ id: 's1', text: 'Aislar y señalizar el área de trabajo', done: false }, { id: 's2', text: 'Preparar superficie y retirar pintura', done: false }, { id: 's3', text: 'Soldar y verificar cordón', done: false }], closureComment: '', createdAt: new Date().toISOString() },
+      { id: 'OT-005', area: 'Compresor de aire · Taller', title: 'Cambio de filtros y drenaje de condensado', priority: 'Baja', assigneeId: 'tech-1', dueDate: dateOffset(6), status: 'awaiting_approval', description: 'Mantenimiento preventivo trimestral del sistema de aire comprimido.', subtasks: [{ id: 's1', text: 'Cambiar filtro de admisión', done: true }, { id: 's2', text: 'Cambiar filtro separador', done: true }, { id: 's3', text: 'Drenar condensado del tanque', done: true }, { id: 's4', text: 'Verificar presión y fugas', done: true }], closureComment: 'Filtros reemplazados y condensado drenado. Equipo probado, sin fugas; presión estable en 7.2 bar.', createdAt: new Date().toISOString() },
+      { id: 'OT-006', area: 'Sistema de bombeo · Tanque de lixiviados', title: 'Ajustar flotador de bomba sumergible', priority: 'Media', assigneeId: 'tech-2', dueDate: dateOffset(-1), status: 'completed', description: 'Ajuste realizado y validado con operación en ciclo automático.', subtasks: [{ id: 's1', text: 'Inspeccionar cable y flotador', done: true }, { id: 's2', text: 'Ajustar nivel de activación', done: true }, { id: 's3', text: 'Probar ciclo de bombeo', done: true }], closureComment: 'Flotador ajustado. Tres ciclos de prueba satisfactorios; operación conforme.', createdAt: new Date().toISOString() }
+    ];
+
+    function normalizeTask(raw, index, documentId) {
+      if (!raw || typeof raw !== 'object') throw new Error('Una orden no tiene un formato válido.');
+      const id = String(documentId || raw.id || ('OT-' + String(index + 1).padStart(3, '0'))).replace(/\//g, '-').slice(0, 120);
+      const techValue = String(raw.tecnico || raw.assigneeId || '');
+      const technician = TECHNICIANS.find((item) => item.id === techValue || item.name === techValue);
+      const sourceSubtasks = Array.isArray(raw.subtareas) ? raw.subtareas : (Array.isArray(raw.subtasks) ? raw.subtasks : []);
+      const subtasks = sourceSubtasks.map((subtask, subIndex) => ({
+        id: String((subtask && subtask.id) || ('sub-' + Date.now() + '-' + subIndex)).slice(0, 80),
+        text: String((subtask && (subtask.texto || subtask.text)) || '').trim().slice(0, 180),
+        done: Boolean(subtask && (subtask.completada !== undefined ? subtask.completada : subtask.done)),
+        addedBy: String((subtask && (subtask.agregadaPor || subtask.addedBy)) || 'Supervisor').slice(0, 100)
+      })).filter((subtask) => subtask.text);
+      const sourceParts = Array.isArray(raw.repuestos) ? raw.repuestos : [];
+      const repuestos = sourceParts.map((part, partIndex) => ({
+        id: String((part && part.id) || ('part-' + Date.now() + '-' + partIndex)).slice(0, 80),
+        codigo: String((part && part.codigo) || '').slice(0, 80),
+        nombre: String((part && (part.nombre || part.name)) || '').trim().slice(0, 160),
+        cantidad: Number(part && part.cantidad !== undefined ? part.cantidad : part && part.quantity) || 0,
+        unidad: String((part && (part.unidad || part.unit)) || 'Und').slice(0, 30),
+        agregadoPor: String((part && (part.agregadoPor || part.addedBy)) || 'Supervisor').slice(0, 100)
+      })).filter((part) => part.nombre);
+      const rawStatus = raw.estado || raw.status;
+      const status = STATUS_FROM_FIRESTORE[rawStatus] || (['pending', 'in_progress', 'awaiting_approval', 'completed'].includes(rawStatus) ? rawStatus : 'pending');
+      const due = raw.fechaLimite || raw.dueDate || '';
+      const created = raw.creadoEn || raw.createdAt;
+      const createdAt = created && typeof created.toDate === 'function' ? created.toDate().toISOString() : (created || new Date().toISOString());
+      return {
+        id,
+        area: String(raw.equipo || raw.area || 'Área sin especificar').slice(0, 100),
+        title: String(raw.titulo || raw.title || 'Tarea sin título').slice(0, 140),
+        priority: PRIORITIES.includes(raw.prioridad || raw.priority) ? (raw.prioridad || raw.priority) : 'Media',
+        assigneeId: technician ? technician.id : TECHNICIANS[0].id,
+        dueDate: due && typeof due.toDate === 'function' ? due.toDate().toISOString().slice(0, 10) : (/^\d{4}-\d{2}-\d{2}$/.test(String(due)) ? String(due) : todayISO()),
+        status,
+        description: String(raw.descripcion || raw.description || '').slice(0, 700),
+        subtasks,
+        startAt: normalizeDateTime(raw.fechaHoraInicio || raw.startAt),
+        endAt: normalizeDateTime(raw.fechaHoraFin || raw.endAt),
+        repuestos,
+        closureComment: String(raw.notasTecnico || raw.closureComment || '').slice(0, 1500),
+        createdAt
+      };
+    }
+
+    function taskToFirestore(task, createdMode) {
+      const data = {
+        equipo: task.area,
+        titulo: task.title,
+        prioridad: task.priority,
+        tecnico: technicianName(task.assigneeId),
+        estado: STATUS_TO_FIRESTORE[task.status] || 'Pendiente',
+        fechaLimite: task.dueDate,
+        fechaHoraInicio: task.startAt || null,
+        fechaHoraFin: task.endAt || null,
+        notasTecnico: task.closureComment || '',
+        descripcion: task.description || '',
+        subtareas: task.subtasks.map((subtask) => ({
+          id: subtask.id, texto: subtask.text, completada: Boolean(subtask.done), agregadaPor: subtask.addedBy || 'Supervisor'
+        })),
+        repuestos: (task.repuestos || []).map((part) => ({
+          id: part.id, codigo: part.codigo || '', nombre: part.nombre, cantidad: Number(part.cantidad), unidad: part.unidad, agregadoPor: part.agregadoPor || 'Supervisor'
+        }))
+      };
+      if (createdMode === 'server') data.creadoEn = serverTimestamp();
+      if (createdMode === 'preserve') {
+        const date = new Date(task.createdAt);
+        data.creadoEn = Number.isNaN(date.getTime()) ? serverTimestamp() : Timestamp.fromDate(date);
+      }
+      return data;
+    }
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const db = getFirestore(firebaseApp);
+    let tasks = [];
+    let currentRole = 'supervisor';
+    let toastTimer = null;
+    let lastFocusedElement = null;
+    let initialServerSnapshotHandled = false;
+
+    function technicianName(technicianId) {
+      const tech = TECHNICIANS.find((item) => item.id === technicianId);
+      return tech ? tech.name : 'Sin asignar';
+    }
+
+    function isSupervisor() { return currentRole === 'supervisor'; }
+
+    function scopedTasks() {
+      return isSupervisor() ? tasks : tasks.filter((task) => task.assigneeId === currentRole);
+    }
+
+    function progressFor(task) {
+      if (!task.subtasks.length) return task.status === 'completed' ? 100 : 0;
+      const done = task.subtasks.filter((subtask) => subtask.done).length;
+      return Math.round((done / task.subtasks.length) * 100);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'Sin fecha';
+      const date = new Date(dateString + 'T12:00:00');
+      if (Number.isNaN(date.getTime())) return dateString;
+      return new Intl.DateTimeFormat('es-DO', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+    }
+
+    function toDatetimeLocal(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      const pad = (number) => String(number).padStart(2, '0');
+      return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    }
+
+    function durationLabel(task, now) {
+      if (!task.startAt) return task.status === 'in_progress' ? 'En progreso · registra la hora de inicio' : 'Sin inicio registrado';
+      const start = new Date(task.startAt);
+      const end = task.status === 'in_progress' ? (now || new Date()) : (task.endAt ? new Date(task.endAt) : null);
+      if (Number.isNaN(start.getTime())) return 'Inicio inválido';
+      if (!end || Number.isNaN(end.getTime())) return 'Inicio registrado · ' + new Intl.DateTimeFormat('es-DO', { hour: '2-digit', minute: '2-digit' }).format(start);
+      const minutes = Math.max(0, Math.floor((end.getTime() - start.getTime()) / 60000));
+      const hours = Math.floor(minutes / 60);
+      const remaining = minutes % 60;
+      const text = hours + 'h ' + remaining + 'm';
+      return task.status === 'in_progress' ? 'En curso · ' + text : 'Duración: ' + text;
+    }
+
+    function statusClass(status) {
+      return { pending: 'status-pending', in_progress: 'status-progress', awaiting_approval: 'status-awaiting', completed: 'status-completed' }[status] || 'status-pending';
+    }
+
+    function priorityClass(priority) {
+      return { Baja: 'priority-low', Media: 'priority-medium', Alta: 'priority-high', 'Crítica': 'priority-critical' }[priority] || 'priority-medium';
+    }
+
+    function statusBadge(task) {
+      const label = task.status === 'awaiting_approval' ? 'Concluida · Por aprobar' : task.status === 'completed' ? 'Cerrada' : STATUS_LABELS[task.status];
+      return '<span class="badge ' + statusClass(task.status) + '">' + escapeHtml(label) + '</span>';
+    }
+
+    function executionAndMaterialsMarkup(task) {
+      const parts = task.repuestos || [];
+      const partRows = parts.length ? parts.map((part) =>
+        '<li class="material-row"><span class="material-info">' + escapeHtml(part.nombre) + (part.codigo ? ' <small>(' + escapeHtml(part.codigo) + ')</small>' : '') + ' · <strong>' + escapeHtml(part.cantidad) + ' ' + escapeHtml(part.unidad) + '</strong> <small>por ' + escapeHtml(part.agregadoPor) + '</small></span><button class="material-delete" type="button" data-action="remove-part" data-task-id="' + escapeHtml(task.id) + '" data-part-id="' + escapeHtml(part.id) + '">Quitar</button></li>'
+      ).join('') : '<li class="empty-subtasks">Aún no se han registrado repuestos.</li>';
+      const units = ['Und', 'Litros', 'Metros', 'Galones', 'Kg'];
+      return '<section class="execution-panel"><div class="execution-title"><span>Registro de tiempo de labor</span></div><div class="execution-grid"><label>Inicio<input class="control" type="datetime-local" data-action="save-time" data-task-id="' + escapeHtml(task.id) + '" data-time-field="startAt" value="' + escapeHtml(toDatetimeLocal(task.startAt)) + '"></label><label>Fin<input class="control" type="datetime-local" data-action="save-time" data-task-id="' + escapeHtml(task.id) + '" data-time-field="endAt" value="' + escapeHtml(toDatetimeLocal(task.endAt)) + '"></label></div><p class="duration-value" data-duration-for="' + escapeHtml(task.id) + '">' + escapeHtml(durationLabel(task)) + '</p></section>' +
+        '<details class="materials-panel"><summary class="materials-summary"><span>Repuestos / Materiales Utilizados</span><span class="materials-count">' + parts.length + (parts.length === 1 ? ' ítem' : ' ítems') + '</span></summary><ul class="materials-list">' + partRows + '</ul><form class="material-form" data-task-id="' + escapeHtml(task.id) + '"><label>Repuesto<input class="control" name="name" maxlength="160" placeholder="Nombre o descripción" required></label><label>Cantidad<input class="control" name="quantity" type="number" min="0.001" step="any" value="1" required></label><label>Unidad<select class="control" name="unit">' + units.map((unit) => '<option value="' + escapeHtml(unit) + '">' + escapeHtml(unit) + '</option>').join('') + '</select></label><button class="button button-primary" type="submit">Agregar</button></form></details>';
+    }
+
+    function renderKpis() {
+      const visible = scopedTasks();
+      const pending = visible.filter((task) => task.status === 'pending').length;
+      const progress = visible.filter((task) => task.status === 'in_progress').length;
+      const awaiting = visible.filter((task) => task.status === 'awaiting_approval').length;
+      const completed = visible.filter((task) => task.status === 'completed').length;
+      byId('kpiTotal').textContent = visible.length;
+      byId('kpiPending').textContent = pending;
+      byId('kpiProgress').textContent = progress;
+      byId('kpiCompleted').textContent = awaiting + completed;
+      byId('kpiCompletedNote').textContent = awaiting + ' por aprobar · ' + completed + ' cerradas';
+      byId('kpiTotalNote').textContent = isSupervisor() ? 'Órdenes de toda la planta' : 'Órdenes asignadas a ti';
+    }
+
+    function renderTechnicianFilter() {
+      const filter = byId('technicianFilter');
+      const current = filter.value || 'all';
+      filter.innerHTML = '<option value="all">Todos los técnicos</option>' + TECHNICIANS.map((tech) => '<option value="' + tech.id + '">' + escapeHtml(tech.name) + '</option>').join('');
+      filter.value = TECHNICIANS.some((tech) => tech.id === current) ? current : 'all';
+      byId('technicianFilterWrap').style.display = isSupervisor() ? '' : 'none';
+    }
+
+    function cardMarkup(task) {
+      const percent = progressFor(task);
+      const subtasksMarkup = task.subtasks.length ? task.subtasks.map((subtask) => {
+        const checkId = 'check-' + task.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-' + subtask.id.replace(/[^a-zA-Z0-9_-]/g, '');
+        return '<li class="subtask ' + (subtask.done ? 'is-checked' : '') + '"><input type="checkbox" id="' + escapeHtml(checkId) + '" data-action="toggle-subtask" data-task-id="' + escapeHtml(task.id) + '" data-subtask-id="' + escapeHtml(subtask.id) + '" ' + (subtask.done ? 'checked' : '') + '><label for="' + escapeHtml(checkId) + '">' + escapeHtml(subtask.text) + '</label></li>';
+      }).join('') : '<li class="empty-subtasks">Todavía no hay subtareas en esta orden.</li>';
+      const statusSelect = isSupervisor()
+        ? '<span class="locked-note">' + escapeHtml(STATUS_LABELS[task.status] || 'Pendiente') + '</span>'
+        : task.status === 'completed'
+          ? '<span class="locked-note">Cerrada por supervisor</span>'
+          : '<select class="control status-control" data-action="change-status" data-task-id="' + escapeHtml(task.id) + '" aria-label="Cambiar estado de ' + escapeHtml(task.title) + '">' +
+            '<option value="pending" ' + (task.status === 'pending' ? 'selected' : '') + '>Pendiente</option>' +
+            '<option value="in_progress" ' + (task.status === 'in_progress' ? 'selected' : '') + '>En progreso</option>' +
+            '<option value="awaiting_approval" ' + (task.status === 'awaiting_approval' ? 'selected' : '') + '>Concluida · Enviar a aprobar</option>' +
+            '</select>';
+      const approvalAction = isSupervisor() && task.status === 'awaiting_approval'
+        ? '<button class="text-button approve-button" type="button" data-action="approve" data-task-id="' + escapeHtml(task.id) + '">Aprobar y cerrar</button>'
+        : '';
+      const supervisorActions = isSupervisor()
+        ? '<button class="text-button" type="button" data-action="edit" data-task-id="' + escapeHtml(task.id) + '">Editar</button><button class="text-button danger" type="button" data-action="delete" data-task-id="' + escapeHtml(task.id) + '">Eliminar</button>'
+        : '';
+      const commentEditor = !isSupervisor() && task.status !== 'completed'
+        ? '<div class="comment-box"><label for="comment-' + escapeHtml(task.id) + '">Comentario técnico / cierre</label><textarea class="control" id="comment-' + escapeHtml(task.id) + '" maxlength="1500" placeholder="Describe el trabajo realizado, mediciones o hallazgos...">' + escapeHtml(task.closureComment) + '</textarea><div class="comment-actions"><button class="button button-light button-small" type="button" data-action="save-comment" data-task-id="' + escapeHtml(task.id) + '">Guardar comentario</button></div></div>'
+        : task.closureComment ? '<div class="saved-comment"><strong>Comentario técnico:</strong> ' + escapeHtml(task.closureComment) + '</div>' : '';
+      const executionAndMaterials = executionAndMaterialsMarkup(task);
+      const description = task.description ? '<p class="task-description">' + escapeHtml(task.description) + '</p>' : '';
+      return '<article class="task-card" data-task-id="' + escapeHtml(task.id) + '" aria-labelledby="title-' + escapeHtml(task.id) + '">' +
+        '<div class="task-card-top"><div class="task-meta"><span class="task-id">' + escapeHtml(task.id) + '</span><div class="badges"><span class="badge ' + priorityClass(task.priority) + '">' + escapeHtml(task.priority) + '</span>' + statusBadge(task) + '<span class="badge status-progress">' + (task.repuestos || []).length + ' repuestos</span></div></div>' +
+        '<h3 class="task-title" id="title-' + escapeHtml(task.id) + '">' + escapeHtml(task.title) + '</h3><div class="task-area">' + escapeHtml(task.area) + '</div>' + description + '</div>' +
+        '<div class="task-stats"><div><span class="stat-label">Técnico asignado</span><div class="stat-value"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c.7-3.4 3.1-5.2 7-5.2s6.3 1.8 7 5.2"/></svg><span>' + escapeHtml(technicianName(task.assigneeId)) + '</span></div></div><div><span class="stat-label">Fecha límite</span><div class="stat-value"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M7.5 3v4M16.5 3v4M4 9.5h16"/></svg><span>' + escapeHtml(formatDate(task.dueDate)) + '</span></div></div></div>' +
+        '<div class="progress-wrap"><div class="progress-label"><span>Progreso de subtareas</span><strong>' + percent + '%</strong></div><div class="progress-track" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso de ' + escapeHtml(task.title) + '"><div class="progress-fill ' + (percent === 100 ? 'is-done' : '') + '" style="width:' + percent + '%"></div></div></div>' +
+        '<div class="runtime-summary"><span>Tiempo de labor</span><strong data-duration-for="' + escapeHtml(task.id) + '">' + escapeHtml(durationLabel(task)) + '</strong></div>' +
+        '<details class="task-details"><summary><span class="summary-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m5 12 4 4L19 6"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Checklist <span>(' + task.subtasks.filter((item) => item.done).length + '/' + task.subtasks.length + ')</span></span><span class="chevron">⌄</span></summary><div class="detail-body"><ul class="subtasks">' + subtasksMarkup + '</ul><form class="add-subtask" data-task-id="' + escapeHtml(task.id) + '"><label class="sr-only" for="add-' + escapeHtml(task.id) + '">Añadir subtarea</label><input class="control" id="add-' + escapeHtml(task.id) + '" name="subtask" maxlength="180" placeholder="Añadir hallazgo o subtarea..." required><button type="submit" aria-label="Añadir subtarea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></form>' + executionAndMaterials + commentEditor + '</div></details>' +
+        '<footer class="task-footer">' + statusSelect + '<div class="footer-actions">' + approvalAction + supervisorActions + '</div></footer></article>';
+    }
+
+    function renderTasks() {
+      const openTaskIds = new Set(Array.from(byId('taskList').querySelectorAll('.task-card details[open]')).map((details) => details.closest('.task-card').dataset.taskId));
+      const openMaterialsIds = new Set(Array.from(byId('taskList').querySelectorAll('.task-card details.materials-panel[open]')).map((details) => details.closest('.task-card').dataset.taskId));
+      const search = byId('searchInput').value.trim().toLocaleLowerCase('es');
+      const status = byId('statusFilter').value;
+      const priority = byId('priorityFilter').value;
+      const technician = byId('technicianFilter').value;
+      const visible = scopedTasks().filter((task) => {
+        const haystack = [task.id, task.title, task.area, task.description, technicianName(task.assigneeId)].join(' ').toLocaleLowerCase('es');
+        return (!search || haystack.includes(search)) && (status === 'all' || task.status === status) && (priority === 'all' || task.priority === priority) && (!isSupervisor() || technician === 'all' || task.assigneeId === technician);
+      }).sort((a, b) => {
+        const rank = { awaiting_approval: 0, in_progress: 1, pending: 2, completed: 3 };
+        return rank[a.status] - rank[b.status] || String(a.dueDate).localeCompare(String(b.dueDate));
+      });
+      byId('resultsCount').textContent = visible.length + (visible.length === 1 ? ' orden' : ' órdenes');
+      if (!visible.length) {
+        byId('taskList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/><path d="M8 10.8h5.6"/></svg><h3>No hay órdenes para mostrar</h3><p>Prueba cambiando los filtros o la búsqueda.</p></div>';
+      } else {
+        byId('taskList').innerHTML = visible.map(cardMarkup).join('');
+        byId('taskList').querySelectorAll('.task-card').forEach((card) => {
+          if (openTaskIds.has(card.dataset.taskId)) card.querySelector('details').open = true;
+          const materials = card.querySelector('.materials-panel');
+          if (materials && openMaterialsIds.has(card.dataset.taskId)) materials.open = true;
+        });
+      }
+    }
+
+    function render() {
+      const supervisor = isSupervisor();
+      byId('pageSubtitle').textContent = supervisor ? 'Control general de órdenes, asignaciones y cierres de mantenimiento.' : 'Órdenes asignadas a ti. Actualiza el avance y registra tus hallazgos de campo.';
+      byId('roleNote').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>' + (supervisor ? 'Vista de supervisor: puedes administrar órdenes y aprobar trabajos concluidos.' : 'Vista de técnico: solo se muestran tus tareas asignadas. Al concluir, la orden queda pendiente de aprobación del supervisor.');
+      byId('newTaskButton').style.display = supervisor ? 'inline-flex' : 'none';
+      byId('backupActions').style.display = supervisor ? 'contents' : 'none';
+      renderTechnicianFilter();
+      renderKpis();
+      renderTasks();
+    }
+
+    function showToast(message) {
+      const toast = byId('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function findTask(taskId) { return tasks.find((task) => task.id === taskId); }
+
+    function setConnection(label, connected, error) {
+      byId('connectionLabel').textContent = label;
+      byId('connectionStatus').classList.toggle('is-connected', Boolean(connected));
+      byId('connectionStatus').classList.toggle('is-error', Boolean(error));
+    }
+
+    function taskActor() {
+      return isSupervisor() ? 'Supervisor' : (ROLE_LABELS[currentRole] || 'Técnico');
+    }
+
+    async function saveTaskUpdate(taskId, changes, successMessage) {
+      const current = findTask(taskId);
+      if (!current || (!isSupervisor() && current.assigneeId !== currentRole)) return false;
+      const previous = JSON.parse(JSON.stringify(current));
+      const updated = Object.assign({}, current, changes);
+      tasks[tasks.findIndex((item) => item.id === taskId)] = updated;
+      render();
+      try {
+        await updateDoc(doc(db, 'tareas_mantenimiento', taskId), taskToFirestore(updated));
+        if (successMessage) showToast(successMessage);
+        return true;
+      } catch (error) {
+        console.error('Error guardando cambios en Firestore:', error);
+        const index = tasks.findIndex((item) => item.id === taskId);
+        if (index >= 0) tasks[index] = previous;
+        render();
+        showToast('No se guardó el cambio. Revisa conexión y permisos de Firestore.');
+        return false;
+      }
+    }
+
+    async function seedInitialTasks() {
+      try {
+        const batch = writeBatch(db);
+        makeSeedTasks().forEach((task) => batch.set(doc(db, 'tareas_mantenimiento', task.id), taskToFirestore(task, 'server')));
+        await batch.commit();
+        showToast('Se cargaron órdenes de ejemplo en Firestore.');
+      } catch (error) {
+        console.error('No se pudieron crear las órdenes iniciales:', error);
+        setConnection('Error al preparar datos', false, true);
+      }
+    }
+
+    function startFirestoreSync() {
+      setConnection('Conectando a Firestore…', false, false);
+      onSnapshot(collection(db, 'tareas_mantenimiento'), { includeMetadataChanges: true }, (snapshot) => {
+        tasks = snapshot.docs.map((item, index) => normalizeTask(item.data(), index, item.id));
+        render();
+        if (snapshot.metadata.fromCache) {
+          setConnection(navigator.onLine ? 'Sincronizando…' : 'Desconectado', false, !navigator.onLine);
+          return;
+        }
+        setConnection('En vivo', true, false);
+        if (!initialServerSnapshotHandled) {
+          initialServerSnapshotHandled = true;
+          if (snapshot.empty) void seedInitialTasks();
+        }
+      }, (error) => {
+        console.error('Error en la suscripción de Firestore:', error);
+        setConnection('Desconectado', false, true);
+        showToast('No se pudo leer tareas_mantenimiento. Revisa permisos y conexión.');
+      });
+    }
+
+    window.addEventListener('offline', () => setConnection('Desconectado', false, true));
+    window.addEventListener('online', () => setConnection('Conectando…', false, false));
+
+    function openTaskModal(task) {
+      if (!isSupervisor()) return;
+      lastFocusedElement = document.activeElement;
+      byId('taskForm').reset();
+      byId('assigneeField').innerHTML = TECHNICIANS.map((tech) => '<option value="' + tech.id + '">' + escapeHtml(tech.name) + '</option>').join('');
+      byId('taskIdField').value = task ? task.id : '';
+      byId('modalTitle').textContent = task ? 'Editar orden de trabajo' : 'Nueva orden de trabajo';
+      byId('modalSubtitle').textContent = task ? 'Actualiza los datos y el estado de la intervención.' : 'Completa los datos de la intervención.';
+      byId('saveTaskButton').textContent = task ? 'Guardar cambios' : 'Crear tarea';
+      byId('editStatusWrap').style.display = task ? '' : 'none';
+      byId('areaField').value = task ? task.area : '';
+      byId('priorityField').value = task ? task.priority : 'Media';
+      byId('titleField').value = task ? task.title : '';
+      byId('assigneeField').value = task ? task.assigneeId : TECHNICIANS[0].id;
+      byId('dueDateField').value = task ? task.dueDate : dateOffset(1);
+      byId('descriptionField').value = task ? task.description : '';
+      byId('editStatusField').value = task ? task.status : 'pending';
+      byId('taskModalBackdrop').classList.add('is-open');
+      byId('areaField').focus();
+    }
+
+    function closeTaskModal() {
+      byId('taskModalBackdrop').classList.remove('is-open');
+      if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') lastFocusedElement.focus();
+    }
+
+    function nextTaskId() {
+      const largest = tasks.reduce((max, task) => {
+        const match = String(task.id).match(/(\d+)$/);
+        return match ? Math.max(max, Number(match[1])) : max;
+      }, 0);
+      return 'OT-' + String(largest + 1).padStart(3, '0');
+    }
+
+    byId('roleSelect').addEventListener('change', (event) => {
+      currentRole = event.target.value;
+      render();
+    });
+    ['searchInput', 'statusFilter', 'priorityFilter', 'technicianFilter'].forEach((id) => {
+      byId(id).addEventListener(id === 'searchInput' ? 'input' : 'change', renderTasks);
+    });
+    byId('newTaskButton').addEventListener('click', () => openTaskModal(null));
+    byId('closeModalButton').addEventListener('click', closeTaskModal);
+    byId('cancelModalButton').addEventListener('click', closeTaskModal);
+    byId('taskModalBackdrop').addEventListener('click', (event) => {
+      if (event.target === byId('taskModalBackdrop')) closeTaskModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && byId('taskModalBackdrop').classList.contains('is-open')) closeTaskModal();
+    });
+
+    byId('taskForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!isSupervisor() || !initialServerSnapshotHandled) {
+        showToast('Espera a que Firestore termine de sincronizar.');
+        return;
+      }
+      const taskId = byId('taskIdField').value;
+      const existing = taskId ? findTask(taskId) : null;
+      const values = {
+        area: byId('areaField').value.trim(),
+        priority: byId('priorityField').value,
+        title: byId('titleField').value.trim(),
+        assigneeId: byId('assigneeField').value,
+        dueDate: byId('dueDateField').value,
+        description: byId('descriptionField').value.trim()
+      };
+      if (existing) {
+        const status = byId('editStatusField').value;
+        const saved = await saveTaskUpdate(existing.id, Object.assign({}, values, { status }), 'Orden actualizada en Firestore.');
+        if (saved) closeTaskModal();
+        return;
+      }
+      const id = 'OT-' + todayISO().replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+      const task = normalizeTask(Object.assign({ id, status: 'pending', subtasks: [], repuestos: [], startAt: null, endAt: null, closureComment: '', createdAt: new Date().toISOString() }, values), tasks.length);
+      try {
+        await addDoc(collection(db, 'tareas_mantenimiento'), taskToFirestore(task, 'server'));
+        showToast('Nueva orden creada en Firestore.');
+        closeTaskModal();
+      } catch (error) {
+        console.error('Error creando orden:', error);
+        showToast('No se pudo crear la orden. Revisa conexión y permisos.');
+      }
+    });
+
+    byId('taskList').addEventListener('change', (event) => {
+      const control = event.target;
+      const task = findTask(control.dataset.taskId);
+      if (!task) return;
+      if (control.dataset.action === 'toggle-subtask') {
+        if (!isSupervisor() && task.assigneeId !== currentRole) return;
+        const subtasks = task.subtasks.map((item) => item.id === control.dataset.subtaskId ? Object.assign({}, item, { done: control.checked }) : item);
+        void saveTaskUpdate(task.id, { subtasks }, '');
+      }
+      if (control.dataset.action === 'save-time') {
+        if (!isSupervisor() && task.assigneeId !== currentRole) return;
+        const field = control.dataset.timeField;
+        if (field !== 'startAt' && field !== 'endAt') return;
+        const value = control.value ? new Date(control.value).toISOString() : null;
+        void saveTaskUpdate(task.id, { [field]: value }, 'Registro de tiempo actualizado.');
+      }
+      if (control.dataset.action === 'change-status') {
+        if (isSupervisor() || task.assigneeId !== currentRole || task.status === 'completed') return;
+        const status = control.value;
+        const changes = { status };
+        if (status === 'in_progress') changes.startAt = new Date().toISOString();
+        if (status === 'awaiting_approval') changes.endAt = new Date().toISOString();
+        void saveTaskUpdate(task.id, changes, status === 'awaiting_approval' ? 'Labor finalizada y enviada para validación.' : 'Estado actualizado en Firestore.');
+      }
+    });
+
+    byId('taskList').addEventListener('submit', (event) => {
+      const form = event.target.closest('.add-subtask, .material-form');
+      if (!form) return;
+      event.preventDefault();
+      const task = findTask(form.dataset.taskId);
+      if (!task || (!isSupervisor() && task.assigneeId !== currentRole)) return;
+      if (form.matches('.add-subtask')) {
+        const text = form.elements.subtask.value.trim();
+        if (!text) return;
+        const subtasks = task.subtasks.concat([{
+          id: 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+          text: text.slice(0, 180), done: false, addedBy: taskActor()
+        }]);
+        void saveTaskUpdate(task.id, { subtasks }, 'Subtarea sincronizada con Firestore.');
+        return;
+      }
+      const nombre = form.elements.name.value.trim();
+      const cantidad = Number(form.elements.quantity.value);
+      if (!nombre || !Number.isFinite(cantidad) || cantidad <= 0) return;
+      const repuestos = (task.repuestos || []).concat([{
+        id: 'mat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+        codigo: '', nombre: nombre.slice(0, 160), cantidad, unidad: form.elements.unit.value, agregadoPor: taskActor()
+      }]);
+      void saveTaskUpdate(task.id, { repuestos }, 'Repuesto agregado y sincronizado.');
+    });
+
+    byId('taskList').addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      const task = findTask(button.dataset.taskId);
+      if (!task) return;
+      switch (button.dataset.action) {
+        case 'edit':
+          if (isSupervisor()) openTaskModal(task);
+          break;
+        case 'delete':
+          if (isSupervisor() && window.confirm('¿Eliminar la orden ' + task.id + ' y sus subtareas? Esta acción no se puede deshacer.')) {
+            try {
+              await deleteDoc(doc(db, 'tareas_mantenimiento', task.id));
+              showToast('Orden eliminada de Firestore.');
+            } catch (error) {
+              console.error('Error eliminando orden:', error);
+              showToast('No se pudo eliminar la orden. Revisa permisos de Firestore.');
+            }
+          }
+          break;
+        case 'remove-part': {
+          if (!isSupervisor() && task.assigneeId !== currentRole) return;
+          const repuestos = (task.repuestos || []).filter((part) => part.id !== button.dataset.partId);
+          await saveTaskUpdate(task.id, { repuestos }, 'Repuesto eliminado del registro.');
+          break;
+        }
+        case 'approve':
+          if (isSupervisor() && task.status === 'awaiting_approval') {
+            await saveTaskUpdate(task.id, { status: 'completed' }, 'Orden validada y cerrada en Firestore.');
+          }
+          break;
+        case 'save-comment': {
+          if (isSupervisor() || task.assigneeId !== currentRole || task.status === 'completed') return;
+          const textarea = byId('comment-' + task.id);
+          if (textarea) await saveTaskUpdate(task.id, { closureComment: textarea.value.trim().slice(0, 1500) }, 'Comentario técnico guardado.');
+          break;
+        }
+      }
+    });
+
+    byId('exportButton').addEventListener('click', () => {
+      if (!isSupervisor()) return;
+      const backup = {
+        app: 'MSA CMMS',
+        collection: 'tareas_mantenimiento',
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        tasks: tasks.map((task) => ({
+          id: task.id,
+          equipo: task.area,
+          titulo: task.title,
+          prioridad: task.priority,
+          tecnico: technicianName(task.assigneeId),
+          estado: STATUS_TO_FIRESTORE[task.status],
+          fechaLimite: task.dueDate,
+          fechaHoraInicio: task.startAt || null,
+          fechaHoraFin: task.endAt || null,
+          notasTecnico: task.closureComment || '',
+          descripcion: task.description || '',
+          creadoEn: task.createdAt,
+          subtareas: task.subtasks.map((subtask) => ({
+            id: subtask.id, texto: subtask.text, completada: Boolean(subtask.done), agregadaPor: subtask.addedBy || 'Supervisor'
+          })),
+          repuestos: (task.repuestos || []).map((part) => ({
+            id: part.id, codigo: part.codigo || '', nombre: part.nombre, cantidad: Number(part.cantidad), unidad: part.unidad, agregadoPor: part.agregadoPor || 'Supervisor'
+          }))
+        }))
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'msa-cmms-respaldo-' + todayISO() + '.json';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      showToast('Respaldo generado desde los datos sincronizados con Firestore.');
+    });
+
+    byId('importButton').addEventListener('click', () => {
+      if (isSupervisor()) byId('importFile').click();
+    });
+    byId('importFile').addEventListener('change', async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      try {
+        if (!isSupervisor() || !initialServerSnapshotHandled) throw new Error('Espera la sincronización de Firestore para importar.');
+        const parsed = JSON.parse(await file.text());
+        const rows = Array.isArray(parsed) ? parsed : parsed && parsed.tasks;
+        if (!Array.isArray(rows)) throw new Error('El archivo debe contener una lista "tasks" de órdenes.');
+        const imported = rows.map((row, index) => normalizeTask(row, index));
+        const ids = new Set(imported.map((task) => task.id));
+        if (ids.size !== imported.length) throw new Error('El respaldo contiene IDs duplicados.');
+        if (!window.confirm('Se importarán ' + imported.length + ' órdenes a Firestore y se reemplazará la colección actual. ¿Continuar?')) return;
+        const existingIds = tasks.map((task) => task.id);
+        for (let start = 0; start < existingIds.length; start += 450) {
+          const batch = writeBatch(db);
+          existingIds.slice(start, start + 450).forEach((id) => batch.delete(doc(db, 'tareas_mantenimiento', id)));
+          await batch.commit();
+        }
+        for (let start = 0; start < imported.length; start += 450) {
+          const batch = writeBatch(db);
+          imported.slice(start, start + 450).forEach((task) => batch.set(doc(db, 'tareas_mantenimiento', task.id), taskToFirestore(task, 'preserve')));
+          await batch.commit();
+        }
+        showToast(imported.length + ' órdenes importadas a Firestore.');
+      } catch (error) {
+        console.error('Error importando respaldo:', error);
+        showToast('No se pudo importar: ' + (error.message || 'error de Firestore.'));
+      } finally {
+        event.target.value = '';
+      }
+    });
+
+    byId('todayLabel').textContent = new Intl.DateTimeFormat('es-DO', { dateStyle: 'full' }).format(new Date());
+    render();
+    startFirestoreSync();
+    setInterval(() => {
+      const now = new Date();
+      document.querySelectorAll('.duration-value[data-duration-for]').forEach((element) => {
+        const task = findTask(element.dataset.durationFor);
+        if (task && task.status === 'in_progress') element.textContent = durationLabel(task, now);
+      });
+    }, 60000);
+  </script>
+</body>
+</html>
